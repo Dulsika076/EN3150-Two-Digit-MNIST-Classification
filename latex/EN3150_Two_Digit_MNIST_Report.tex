@@ -1,0 +1,1823 @@
+% ============================================================
+% EN3150 - ASSIGNMENT 03
+% RESOURCE-CONSTRAINED CNN FOR EDGE IMAGE CLASSIFICATION
+% ============================================================
+
+\documentclass[12pt,a4paper]{report}
+
+% ============================================================
+% PACKAGES
+% ============================================================
+
+\usepackage[a4paper,
+            left=1in,
+            right=1in,
+            top=1in,
+            bottom=1in]{geometry}
+
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{longtable}
+\usepackage{multirow}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{enumitem}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{setspace}
+\usepackage{titlesec}
+\usepackage{tocloft}
+\usepackage{fancyhdr}
+\usepackage{url}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{background}
+
+% ============================================================
+% GENERAL SETTINGS
+% ============================================================
+
+\onehalfspacing
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.4em}
+
+%----------------------------------------------------------------------------------------
+% PAGE BORDER
+%----------------------------------------------------------------------------------------
+
+\backgroundsetup{
+  scale=1,
+  color=black,
+  opacity=1,
+  angle=0,
+  contents={%
+    \begin{tikzpicture}[remember picture, overlay]
+      \draw[thick]
+      ([xshift=1cm, yshift=-1cm]current page.north west)
+      rectangle
+      ([xshift=-1cm, yshift=1cm]current page.south east);
+    \end{tikzpicture}
+  }
+}
+% ============================================================
+% HYPERREF
+% ============================================================
+
+\hypersetup{
+    colorlinks=false,
+    hidelinks,
+    pdftitle={Resource-Constrained CNN for Edge Image Classification},
+    pdfauthor={Dilhara D.S.},
+    pdfsubject={EN3150 Assignment 03}
+}
+
+% ============================================================
+% CHAPTER FORMAT
+% ============================================================
+
+\titleformat{\chapter}
+    {\normalfont\bfseries\Large}
+    {\thechapter}
+    {1em}
+    {}
+
+\titlespacing*{\chapter}
+    {0pt}
+    {0pt}
+    {18pt}
+
+% ============================================================
+% SECTION FORMAT
+% ============================================================
+
+\titleformat{\section}
+    {\normalfont\bfseries\large}
+    {\thesection}
+    {0.8em}
+    {}
+
+\titleformat{\subsection}
+    {\normalfont\bfseries\normalsize}
+    {\thesubsection}
+    {0.8em}
+    {}
+
+\titlespacing*{\section}
+    {0pt}
+    {10pt}
+    {5pt}
+
+\titlespacing*{\subsection}
+    {0pt}
+    {8pt}
+    {4pt}
+
+% ============================================================
+% TABLE OF CONTENTS FORMAT
+% ============================================================
+
+\renewcommand{\contentsname}{Contents}
+
+\renewcommand{\cftchapfont}{\bfseries}
+\renewcommand{\cftchapleader}{\cftdotfill{\cftdotsep}}
+
+\renewcommand{\cftsecleader}{\cftdotfill{\cftdotsep}}
+
+\renewcommand{\cftsubsecleader}{\cftdotfill{\cftdotsep}}
+
+\setlength{\cftbeforechapskip}{5pt}
+\setlength{\cftbeforesecskip}{1pt}
+\setlength{\cftbeforesubsecskip}{0pt}
+
+% ============================================================
+% FIGURE CAPTION
+% ============================================================
+
+\captionsetup{
+    font=small,
+    labelfont=bf,
+    justification=centering
+}
+
+% ============================================================
+% HEADER AND FOOTER
+% ============================================================
+
+\pagestyle{fancy}
+
+\fancyhf{}
+
+\fancyfoot[C]{\thepage}
+
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+
+% Chapter pages also use same footer
+\fancypagestyle{plain}{
+    \fancyhf{}
+    \fancyfoot[C]{\thepage}
+    \renewcommand{\headrulewidth}{0pt}
+    \renewcommand{\footrulewidth}{0pt}
+}
+
+% ============================================================
+% HELPER COMMAND FOR OPTIONAL FIGURES
+% ============================================================
+
+\newcommand{\insertfigure}[4]{
+    \begin{figure}[H]
+        \centering
+
+        \IfFileExists{#1}{
+            \includegraphics[
+                width=#2\textwidth
+            ]{#1}
+        }{
+            \fbox{
+                \parbox[c][5cm][c]{0.80\textwidth}{
+                    \centering
+                    Figure file not found:\\
+                    \texttt{#1}
+                }
+            }
+        }
+
+        \caption{#3}
+        \label{#4}
+    \end{figure}
+}
+
+% ============================================================
+% DOCUMENT START
+% ============================================================
+
+\begin{document}
+
+% ============================================================
+% TITLE PAGE
+% ============================================================
+
+\begin{titlepage}
+
+\centering
+
+\vspace*{0.3cm}
+
+% ------------------------------------------------------------
+% UNIVERSITY
+% ------------------------------------------------------------
+
+{\Huge\bfseries
+University of Moratuwa
+\par}
+
+\vspace{0.25cm}
+
+{\Large\bfseries
+Faculty of Engineering
+\par}
+
+\vspace{0.8cm}
+
+% ------------------------------------------------------------
+% UNIVERSITY LOGO
+% ------------------------------------------------------------
+
+\IfFileExists{uom_logo.png}{
+    \includegraphics[
+        width=0.30\textwidth
+    ]{uom_logo.png}
+}{
+    \fbox{
+        \parbox[c][4cm][c]{0.30\textwidth}{
+            \centering
+            University Logo
+        }
+    }
+}
+
+\vspace{1cm}
+
+% ------------------------------------------------------------
+% COURSE
+% ------------------------------------------------------------
+
+{\Large\bfseries
+EN3150 -- Pattern Recognition
+\par}
+
+\vspace{0.7cm}
+
+{\LARGE\bfseries
+Assignment 03
+\par}
+
+\vspace{0.5cm}
+
+{\Large\bfseries
+Resource-Constrained CNN for
+Edge Image Classification
+\par}
+
+\vspace{0.5cm}
+
+
+
+% ------------------------------------------------------------
+% GROUP INFORMATION
+% ------------------------------------------------------------
+
+{\Large\bfseries
+Group Members
+\par}
+
+\vspace{0.4cm}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+
+\begin{tabular}{|p{8cm}|p{4cm}|}
+\hline
+\textbf{Name} & \textbf{Index Number} \\
+\hline
+Dilhara D.S. & 230147L \\
+\hline
+ DISSANAYAKE G.R.G.K.  & 230159B \\
+\hline
+MENDIS T.A.S.D.  & 230409T \\
+\hline
+ MARASINGHA M.D.S.  & 230398F \\
+\hline
+
+\end{tabular}
+
+\end{center}
+
+\vfill
+
+{\large
+2026
+\par}
+
+\end{titlepage}
+
+% ============================================================
+% TABLE OF CONTENTS
+% ============================================================
+
+\pagenumbering{roman}
+
+\tableofcontents
+
+\clearpage
+
+% ============================================================
+% MAIN CONTENT
+% ============================================================
+
+\pagenumbering{arabic}
+
+% ============================================================
+% CHAPTER 1
+% ============================================================
+
+\chapter{Dataset Overview: MNIST 2-Digit Dataset}
+
+% ------------------------------------------------------------
+\section{Overview}
+% ------------------------------------------------------------
+
+The dataset used in this project is the MNIST 2-Digit Dataset.
+The dataset contains handwritten images representing two-digit
+numbers.
+
+Unlike the original MNIST dataset, which contains ten individual
+digit classes, the two-digit dataset represents numbers using two
+digits. Therefore, the classification task contains 100 possible
+classes, ranging from 00 to 99.
+
+The objective of this assignment is to investigate convolutional
+neural network architectures for two-digit handwritten number
+classification while considering memory and computational
+constraints.
+
+The project evaluates both custom CNN architectures and
+fine-tuned pre-trained models.
+
+% ------------------------------------------------------------
+\section{Characteristics of the Dataset}
+% ------------------------------------------------------------
+
+The dataset provides image files together with CSV metadata.
+
+The metadata contains two digit labels:
+
+\begin{itemize}
+    \item \texttt{label\_1}: First digit.
+    \item \texttt{label\_2}: Second digit.
+\end{itemize}
+
+The final class label is calculated as:
+
+\[
+\text{Class Label}
+=
+10\times\text{label\_1}
++
+\text{label\_2}
+\]
+
+Therefore:
+
+\[
+00,01,02,\ldots,98,99
+\]
+
+represent the 100 possible classes.
+\newpage
+% ------------------------------------------------------------
+\section{Image Pre-processing}
+% ------------------------------------------------------------
+
+The assignment specifies a maximum image resolution of
+$64\times64$ pixels.
+
+Therefore, all images were resized to:
+
+\[
+64\times64
+\]
+
+The preprocessing pipeline consisted of:
+
+\begin{enumerate}
+    \item Loading image metadata.
+    \item Constructing the two-digit class label.
+    \item Locating the corresponding image files.
+    \item Resizing images to $64\times64$ pixels.
+    \item Converting images into tensors.
+    \item Normalizing the image data.
+\end{enumerate}
+
+% ------------------------------------------------------------
+\section{Train-Validation-Test Split}
+% ------------------------------------------------------------
+
+The dataset was divided into three subsets:
+
+\begin{itemize}
+    \item 70\% training data
+    \item 15\% validation data
+    \item 15\% test data
+\end{itemize}
+
+A stratified split was used so that the class distribution was
+maintained as consistently as possible across the training,
+validation, and testing subsets.
+\newpage
+% ------------------------------------------------------------
+\section{Sample Images}
+% ------------------------------------------------------------
+
+Figure~\ref{fig:dataset_samples} shows examples of handwritten
+two-digit images from the dataset.
+
+\insertfigure
+    {dataset_samples.png}
+    {0.90}
+    {Sample images from the MNIST 2-Digit Dataset.}
+    {fig:dataset_samples}
+
+% ------------------------------------------------------------
+\section{Dataset Summary}
+% ------------------------------------------------------------
+
+\begin{table}[H]
+\centering
+\caption{Summary of the MNIST 2-Digit Dataset}
+\label{tab:dataset_summary}
+
+\begin{tabular}{ll}
+\toprule
+\textbf{Property} & \textbf{Value} \\
+\midrule
+Dataset & MNIST 2-Digit Dataset \\
+Task & Two-digit number classification \\
+Number of Classes & 100 \\
+Class Range & 00--99 \\
+Maximum Image Resolution & $64\times64$ \\
+Training Split & 70\% \\
+Validation Split & 15\% \\
+Testing Split & 15\% \\
+\bottomrule
+\end{tabular}
+
+\end{table}
+
+
+% ============================================================
+% CHAPTER 2
+% ============================================================
+
+\chapter{Custom CNN for Handwritten Digit Classification}
+
+% ------------------------------------------------------------
+\section{Dataset Loading}
+% ------------------------------------------------------------
+
+The dataset metadata was loaded from the provided CSV files.
+
+The CSV files contain the image filename and the two individual
+digit labels.
+
+The image filename was matched recursively with the corresponding
+image file.
+
+The two labels were combined into one 100-class target label.
+
+% ------------------------------------------------------------
+\section{Dataset Pre-Processing}
+% ------------------------------------------------------------
+
+Each image was converted into a grayscale image and resized to
+$64\times64$ pixels.
+
+The preprocessing pipeline was kept consistent between the
+custom CNN models.
+
+This ensures that differences in performance are primarily caused
+by architectural differences rather than different input
+processing procedures.
+
+% ------------------------------------------------------------
+\section{Train-Validation-Test Split}
+% ------------------------------------------------------------
+
+The same 70/15/15 split was used for all custom models.
+
+This is important because the models must be evaluated using
+the same test distribution to provide a fair comparison.
+
+% ------------------------------------------------------------
+\section{CNN Model Architecture}
+% ------------------------------------------------------------
+
+Two custom CNN architectures were developed.
+
+\begin{itemize}
+    \item Model A: Standard CNN.
+    \item Model B: Lightweight CNN using depthwise-separable
+    convolutions.
+\end{itemize}
+
+% ------------------------------------------------------------
+\subsection{Model A Architecture}
+% ------------------------------------------------------------
+
+Model A is a standard convolutional neural network consisting
+of three convolutional blocks followed by fully connected layers.
+\newpage
+The architecture is:
+
+\begin{enumerate}
+    \item Conv2D: $1\rightarrow16$
+    \item ReLU
+    \item MaxPooling
+    \item Conv2D: $16\rightarrow32$
+    \item ReLU
+    \item MaxPooling
+    \item Conv2D: $32\rightarrow64$
+    \item ReLU
+    \item MaxPooling
+    \item Fully Connected: $64\times8\times8\rightarrow128$
+    \item ReLU
+    \item Fully Connected: $128\rightarrow100$
+\end{enumerate}
+
+The final layer produces 100 class scores.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\linewidth]{Model A.png}
+    \caption{Model A Architecture}
+    \label{fig:placeholder}
+\end{figure}
+
+% ------------------------------------------------------------
+\subsection{Model A Architecture Summary}
+% ------------------------------------------------------------
+
+\begin{table}[H]
+\centering
+\caption{Model A Architecture}
+\label{tab:model_a_arch}
+
+\begin{tabular}{lll}
+\toprule
+\textbf{Layer} & \textbf{Output Channels} & \textbf{Operation} \\
+\midrule
+Input & 1 & Grayscale image \\
+Conv1 & 16 & $3\times3$ convolution \\
+Pool1 & 16 & Max pooling \\
+Conv2 & 32 & $3\times3$ convolution \\
+Pool2 & 32 & Max pooling \\
+Conv3 & 64 & $3\times3$ convolution \\
+Pool3 & 64 & Max pooling \\
+FC1 & 128 & Fully connected \\
+Output & 100 & Classification \\
+\bottomrule
+\end{tabular}
+
+\end{table}
+
+% ------------------------------------------------------------
+\section{Justification for Activation Functions}
+% ------------------------------------------------------------
+
+The ReLU activation function was used throughout the custom CNN.
+
+The ReLU function is:
+
+\[
+f(x)=\max(0,x)
+\]
+
+ReLU is computationally simple and introduces non-linearity into
+the network.
+
+It also avoids some of the optimization difficulties associated
+with saturating activation functions.
+
+% ------------------------------------------------------------
+\section{Why Adam Optimizer is Used?}
+% ------------------------------------------------------------
+
+Adam was selected as the primary optimizer for the main CNN
+experiments.
+
+Adam combines adaptive learning rates with momentum-based
+optimization.
+
+This makes it suitable for training CNNs efficiently without
+requiring extensive manual learning-rate adjustment.
+
+% ------------------------------------------------------------
+\section{Learning Rate Selection}
+% ------------------------------------------------------------
+
+The learning rate controls the size of the parameter updates
+during training.
+
+A learning rate that is too large may result in unstable
+optimization, while a very small learning rate may result in
+slow convergence.
+
+The selected learning rate was used consistently for the main
+model comparison.
+
+% ------------------------------------------------------------
+\section{CNN Model Training}
+% ------------------------------------------------------------
+
+The custom CNN models were trained for 20 epochs.
+
+Cross-entropy loss was used for the 100-class classification
+problem.
+
+The training process monitored:
+
+\begin{itemize}
+    \item Training loss
+    \item Training accuracy
+    \item Validation loss
+    \item Validation accuracy
+\end{itemize}
+
+% ------------------------------------------------------------
+\section{Model A Training Results}
+% ------------------------------------------------------------
+
+Model A achieved strong performance during training.
+
+The final test results are shown in Table~\ref{tab:model_a_results}.
+
+\begin{table}[H]
+\centering
+\caption{Model A Test Performance}
+\label{tab:model_a_results}
+
+\begin{tabular}{lr}
+\toprule
+\textbf{Metric} & \textbf{Result} \\
+\midrule
+Trainable Parameters & 560,612 \\
+Model Size & 2.1431 MB \\
+Average Time/Epoch & 52.27 s \\
+Test Accuracy & 93.85\% \\
+Macro Precision & 93.88\% \\
+Macro Recall & 93.75\% \\
+\bottomrule
+\end{tabular}
+
+\end{table}
+
+% ------------------------------------------------------------
+\section{Model A Learning Curves}
+% ------------------------------------------------------------
+
+\insertfigure
+    {model_a_curves.png}
+    {0.85}
+    {Losses of Training and validation curves for Model A.}
+    {fig:model_a_curves}
+\insertfigure
+    {model_a_curves_.png}
+    {0.85}
+    {Accuracy Training and validation curves for Model A.}
+    {fig:model_a_curves_}
+
+% ------------------------------------------------------------
+\newpage
+\section{Optimizer Comparison}
+% ------------------------------------------------------------
+
+Three optimizers were investigated:
+
+\begin{enumerate}
+    \item Adam
+    \item SGD
+    \item SGD with Momentum
+\end{enumerate}
+
+A five-epoch comparison was conducted to study their early
+optimization behaviour.
+
+% ------------------------------------------------------------
+\subsection{Comparison Metrics}
+% ------------------------------------------------------------
+
+The main metrics used for the optimizer comparison were:
+
+\begin{itemize}
+    \item Training accuracy
+    \item Validation accuracy
+    \item Training loss
+    \item Validation loss
+\end{itemize}
+
+% ------------------------------------------------------------
+\subsection{Optimizer Results}
+% ------------------------------------------------------------
+
+The optimizer comparison produced the following results.
+
+\begin{table}[H]
+\centering
+\caption{Five-Epoch Optimizer Comparison}
+\label{tab:optimizer_comparison}
+
+\begin{tabular}{lcc}
+\toprule
+\textbf{Optimizer} &
+\textbf{Best Validation Accuracy} &
+\textbf{Final Validation Accuracy} \\
+\midrule
+SGD & 5.82\% & 5.82\% \\
+SGD + Momentum &  21.36\% & 13.39\% \\
+Adam & 8.41\% & 3.28\% \\
+\bottomrule
+\end{tabular}
+
+\end{table}
+
+The SGD with Momentum configuration reached a peak validation
+accuracy of approximately 21.36\% during the short experiment.
+
+However, its final validation accuracy dropped to approximately
+7.97\%.
+
+Adam reached higher training accuracy during the five-epoch
+experiment, reaching approximately 8.41\% training accuracy by
+epoch 5.
+
+% ------------------------------------------------------------
+\section{Impact of Momentum Parameter}
+% ------------------------------------------------------------
+
+Momentum influences the direction and magnitude of parameter
+updates.
+
+The general momentum update can be represented as:
+
+\[
+v_t=\beta v_{t-1}+(1-\beta)g_t
+\]
+
+where:
+
+\begin{itemize}
+    \item $v_t$ is the current velocity,
+    \item $\beta$ is the momentum coefficient,
+    \item $g_t$ is the current gradient.
+\end{itemize}
+
+Momentum can improve convergence, but inappropriate settings can
+also cause unstable optimization.
+
+% ------------------------------------------------------------
+\subsection{Comparison of Momentum Behaviour}
+% ------------------------------------------------------------
+
+The results indicate that momentum can produce rapid improvements
+during the early training stage.
+
+However, the validation accuracy did not remain stable throughout
+the short five-epoch experiment.
+
+Therefore, a longer experiment would be required before making a
+final conclusion about the best momentum value.
+
+% ------------------------------------------------------------
+\subsection{Key Observations}
+% ------------------------------------------------------------
+
+The main observations are:
+
+\begin{itemize}
+    \item Optimizer choice strongly affects convergence.
+    \item Momentum can improve early learning.
+    \item Validation performance can fluctuate significantly.
+    \item Five epochs are insufficient for a definitive optimizer
+    benchmark.
+\end{itemize}
+
+% ------------------------------------------------------------
+\section{Model Evaluation on Test Dataset}
+% ------------------------------------------------------------
+
+After training, the final models were evaluated using the
+independent test dataset.
+
+The following metrics were calculated:
+
+\begin{itemize}
+    \item Accuracy
+    \item Macro precision
+    \item Macro recall
+    \item Confusion matrix
+\end{itemize}
+
+% ------------------------------------------------------------
+\subsection{Overall Performance Metrics}
+% ------------------------------------------------------------
+
+Model A achieved:
+
+\[
+Accuracy=93.85\%
+\]
+\[
+Precision=93.88\%
+\]
+\[
+Recall=93.75\%
+\]
+
+These results indicate strong classification performance across
+the 100 classes.
+
+% ------------------------------------------------------------
+\subsection{Confusion Matrix Analysis}
+% ------------------------------------------------------------
+
+\insertfigure
+    {model_a_confusion_matrix.png}
+    {0.80}
+    {Confusion matrix of Model A on the test dataset.}
+    {fig:model_a_confusion}
+
+% ------------------------------------------------------------
+\subsection{Analysis and Insights}
+% ------------------------------------------------------------
+
+The high accuracy, precision, and recall indicate that Model A
+successfully learned useful visual features from the handwritten
+two-digit images.
+
+The model provides a good balance between model complexity and
+classification performance.
+
+
+% ============================================================
+% CHAPTER 3
+% ============================================================
+
+\chapter{Resource-Constrained CNN}
+
+% ------------------------------------------------------------
+\section{Motivation for a Lightweight Model}
+% ------------------------------------------------------------
+
+Edge devices often have limited memory, processing power, and
+energy availability.
+
+Therefore, a model with a large number of parameters may not be
+appropriate for deployment on resource-constrained hardware.
+
+The assignment requires a custom CNN with fewer than 100,000
+trainable parameters.
+
+Model B was therefore designed specifically to satisfy this
+constraint.
+
+% ------------------------------------------------------------
+\section{Depthwise-Separable Convolution}
+% ------------------------------------------------------------
+
+Model B uses depthwise-separable convolutions.
+
+A depthwise-separable convolution divides a conventional
+convolution into:
+
+\begin{enumerate}
+    \item Depthwise convolution.
+    \item Pointwise convolution.
+\end{enumerate}
+
+This reduces the number of parameters and computational operations
+compared with standard convolution.
+
+% ------------------------------------------------------------
+\section{Model B Architecture}
+% ------------------------------------------------------------
+
+The architecture consists of:
+
+\begin{enumerate}
+    \item Depthwise-separable convolution:
+    $1\rightarrow16$
+    \item Max pooling
+    \item Depthwise-separable convolution:
+    $16\rightarrow32$
+    \item Max pooling
+    \item Depthwise-separable convolution:
+    $32\rightarrow64$
+    \item Max pooling
+    \item Adaptive average pooling
+    \item Fully connected layer: $64\rightarrow100$
+\end{enumerate}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\linewidth]{Model B.png}
+    \caption{Lightweight Model}
+    \label{fig:placeholder}
+\end{figure}
+% ------------------------------------------------------------
+\section{Parameter Constraint Verification}
+% ------------------------------------------------------------
+
+The assignment requires:
+\[
+\text{Trainable Parameters}<100,000
+\]
+
+Model B contains:
+\[
+9,741
+\]
+trainable parameters.
+
+Therefore:
+\[
+9,741 < 100,000
+\]
+
+The model successfully satisfies the required resource constraint.
+
+% ------------------------------------------------------------
+\section{Model A Learning Curves}
+% ------------------------------------------------------------
+
+\insertfigure
+    {model_b_curves.png}
+    {0.85}
+    {Losses of Training and validation curves for Model B.}
+    {fig:model_b_curves}
+\insertfigure
+    {model_b_curves_.png}
+    {0.85}
+    {Accuracy Training and validation curves for Model B.}
+    {fig:model_b_curves_}
+    
+% ------------------------------------------------------------
+\section{Model B Evaluation}
+% ------------------------------------------------------------
+
+The final Model B results are shown below.
+
+\begin{table}[H]
+\centering
+\caption{Model B Test Performance}
+\label{tab:model_b_results}
+
+\begin{tabular}{lr}
+\toprule
+\textbf{Metric} & \textbf{Result} \\
+\midrule
+Trainable Parameters & 9,741 \\
+Model Size & 0.0466 MB \\
+Average Time/Epoch & 50.69 s \\
+Test Accuracy & 49.23\% \\
+Macro Precision & 60.06\% \\
+Macro Recall & 49.55\% \\
+\bottomrule
+\end{tabular}
+
+\end{table}
+
+% ------------------------------------------------------------
+\section{Model B Training Behaviour}
+% ------------------------------------------------------------
+
+The training accuracy increased to approximately 77.49\% by
+epoch 20.
+
+However, the final validation accuracy decreased to approximately
+23.84\% at epoch 20.
+
+This indicates instability near the end of training and suggests
+that further regularization or learning-rate tuning may improve
+generalization.
+
+% ------------------------------------------------------------
+\section{Model B Confusion Matrix}
+% ------------------------------------------------------------
+
+\insertfigure
+    {model_b_confusion_matrix.png}
+    {0.80}
+    {Confusion matrix of Model B on the test dataset.}
+    {fig:model_b_confusion}
+
+% ------------------------------------------------------------
+\section{Model B Analysis}
+% ------------------------------------------------------------
+
+Model B provides a very small memory footprint.
+
+It contains only 9,741 trainable parameters compared with
+560,612 parameters in Model A.
+
+Therefore, Model B has approximately 57.6 times fewer trainable
+parameters than Model A.
+
+However, this large reduction in model complexity resulted in a
+substantial reduction in classification accuracy.
+
+Model B achieved 64.97\% accuracy compared with 94.35\% for
+Model A.
+
+This demonstrates the trade-off between resource usage and
+classification performance.
+
+
+% ============================================================
+% CHAPTER 4
+% ============================================================
+
+\chapter{Comparison with State-of-the-Art Networks (Transfer Learning)}
+
+% ------------------------------------------------------------
+\section{Selection and Justification of Pre-trained Models}
+% ------------------------------------------------------------
+
+Two established convolutional neural network architectures were
+selected for transfer learning:
+
+\begin{enumerate}
+    \item EfficientNet-B0
+    \item MobileNetV2
+\end{enumerate}
+
+These architectures were selected because they are widely used
+for efficient image classification and provide a useful
+comparison with the custom resource-constrained architecture.
+
+% ------------------------------------------------------------
+\subsection{Model 1: EfficientNet-B0}
+% ------------------------------------------------------------
+
+EfficientNet-B0 uses compound scaling to balance network depth,
+width, and input resolution.
+
+It provides strong classification performance while maintaining
+a relatively efficient architecture compared with many larger
+CNNs.
+
+% ------------------------------------------------------------
+\subsection{Model 2: MobileNetV2}
+% ------------------------------------------------------------
+
+MobileNetV2 was designed specifically for efficient computation
+on mobile and embedded devices.
+
+It uses inverted residual blocks and linear bottlenecks to reduce
+computational cost.
+
+% ------------------------------------------------------------
+\section{Fine-Tuning Strategy and Implementation}
+% ------------------------------------------------------------
+
+Both pre-trained models were adapted for the 100-class
+two-digit classification problem.
+
+The final classification layer was replaced with a new layer
+producing 100 output classes.
+
+% ------------------------------------------------------------
+\subsection{Data Preprocessing Pipeline}
+% ------------------------------------------------------------
+
+The custom dataset images are grayscale.
+
+The pre-trained networks expect three-channel input.
+
+Therefore, the grayscale images were converted into a
+three-channel representation before being passed to the
+pre-trained networks.
+
+All models used the same underlying train, validation, and test
+data split.
+
+% ------------------------------------------------------------
+\subsection{Model Adaptation Methodology}
+% ------------------------------------------------------------
+
+The classifier layer of each pre-trained network was replaced
+with a 100-class output layer.
+
+The models were then fine-tuned using the project dataset.
+
+The objective was to determine whether transfer learning could
+provide higher classification accuracy than the custom CNNs.
+
+% ------------------------------------------------------------
+\subsection{Transfer Learning Approach}
+% ------------------------------------------------------------
+
+The pre-trained ImageNet weights provide an initial set of
+learned visual features.
+
+Fine-tuning then adapts these representations to the
+two-digit handwritten classification problem.
+
+This approach provides a useful comparison between:
+
+\begin{itemize}
+    \item Learning features completely from scratch.
+    \item Reusing features learned from a large external dataset.
+\end{itemize}
+
+% ------------------------------------------------------------
+\section{Individual Model Performance Evaluation}
+% ------------------------------------------------------------
+
+The two pre-trained models were trained for 20 epochs and
+evaluated on the same test set.
+
+% ------------------------------------------------------------
+\subsection{MobileNetV2 Fine-tuned Model Evaluation}
+% ------------------------------------------------------------
+
+The final MobileNetV2 results are:
+
+\begin{table}[H]
+\centering
+\caption{MobileNetV2 Performance}
+\label{tab:mobilenet_results}
+
+\begin{tabular}{lr}
+\toprule
+\textbf{Metric} & \textbf{Result} \\
+\midrule
+Trainable Parameters & 2,351,972 \\
+Model Size & 9.2100 MB \\
+Average Time/Epoch & 99.50 s \\
+Test Accuracy & 96.79\% \\
+Macro Precision & 96.63\% \\
+Macro Recall & 96.88\% \\
+\bottomrule
+\end{tabular}
+
+\end{table}
+
+MobileNetV2 achieved higher accuracy than both custom CNN
+architectures.
+
+\insertfigure
+    {MobileNetV2.png}
+    {0.85}
+    {Losses of Training and validation curves for MobileNetV2.}
+    {fig:MobileNetV2}
+\insertfigure
+    {MobileNetV2_.png}
+    {0.85}
+    {Accuracy of Training and validation curves for MobileNetV2.}
+    {fig:MobileNetV2_}
+% ------------------------------------------------------------
+\subsection{EfficientNet-B0 Fine-tuned Model Evaluation}
+% ------------------------------------------------------------
+
+The final EfficientNet-B0 results are:
+
+\begin{table}[H]
+\centering
+\caption{EfficientNet-B0 Performance}
+\label{tab:efficientnet_results}
+
+\begin{tabular}{lr}
+\toprule
+\textbf{Metric} & \textbf{Result} \\
+\midrule
+Trainable Parameters & 4,135,648 \\
+Model Size & 16.0674 MB \\
+Average Time/Epoch & 89.48 s \\
+Test Accuracy & 97.47\% \\
+Macro Precision & 97.31\% \\
+Macro Recall & 97.61\% \\
+\bottomrule
+\end{tabular}
+
+\end{table}
+
+EfficientNet-B0 achieved the highest test accuracy among the
+four evaluated models.
+
+\insertfigure
+    {EfficientNet-B0.png}
+    {0.85}
+    {Losses of Training and validation curves forEfficientNet-B0.}
+    {fig:EfficientNet-B0}
+\insertfigure
+    {EfficientNet-B0_.png}
+    {0.85}
+    {Accuracy of Training and validation curves for EfficientNet-B0.}
+    {fig:EfficientNet-B0_}
+% ------------------------------------------------------------
+\section{Performance Comparison: Custom CNN vs. Fine-tuned
+State-of-the-Art Models}
+% ------------------------------------------------------------
+
+The complete comparison is shown in Table~\ref{tab:complete_comparison}.
+
+\begin{table}[H]
+\centering
+\caption{Comprehensive Performance Comparison}
+\label{tab:complete_comparison}
+
+\resizebox{\textwidth}{!}{
+\begin{tabular}{lrrrrrr}
+\toprule
+\textbf{Model}
+&
+\textbf{Parameters}
+&
+\textbf{Size (MB)}
+&
+\textbf{Time/Epoch}
+&
+\textbf{Accuracy}
+&
+\textbf{Precision}
+&
+\textbf{Recall}
+\\
+\midrule
+
+Model A
+&
+560,612
+&
+2.1431
+&
+46.62 s
+&
+94.35\%
+&
+94.16\%
+&
+94.35\%
+\\
+
+Model B
+&
+9,741
+&
+0.0466
+&
+50.69 s
+&
+64.97\%
+&
+73.53\%
+&
+65.87\%
+\\
+
+MobileNetV2
+&
+2,351,972
+&
+9.2100
+&
+99.50 s
+&
+96.79\%
+&
+96.63\%
+&
+96.88\%
+\\
+
+EfficientNet-B0
+&
+4,135,648
+&
+16.0674
+&
+89.48 s
+&
+97.47\%
+&
+97.31\%
+&
+97.61\%
+\\
+
+\bottomrule
+\end{tabular}
+}
+
+\end{table}
+
+% ------------------------------------------------------------
+\section{Point-by-Point Comparative Analysis}
+% ------------------------------------------------------------
+
+\subsection{Accuracy}
+
+EfficientNet-B0 achieved the highest test accuracy:
+
+\[
+97.47\%
+\]
+
+MobileNetV2 achieved:
+
+\[
+96.79\%
+\]
+
+Model A achieved:
+
+\[
+94.35\%
+\]
+
+Model B achieved:
+
+\[
+64.97\%
+\]
+
+Therefore, according to accuracy:
+
+\[
+\text{EfficientNet-B0}
+>
+\text{MobileNetV2}
+>
+\text{Model A}
+>
+\text{Model B}
+\]
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\linewidth]{accuracy_vs_model.png}
+    \caption{Accuracy vs Model}
+    \label{fig:placeholder}
+\end{figure}
+% ------------------------------------------------------------
+\subsection{Memory Footprint}
+% ------------------------------------------------------------
+
+Model B has the smallest model size:
+
+\[
+0.0466\text{ MB}
+\]
+
+This is significantly smaller than all other evaluated models.
+
+EfficientNet-B0 has the largest model size:
+
+\[
+16.0674\text{ MB}
+\]
+
+% ------------------------------------------------------------
+\subsection{Computational Cost}
+% ------------------------------------------------------------
+
+Model A has the shortest average training time per epoch among
+the four models:
+
+\[
+46.62\text{ seconds}
+\]
+
+Model B takes:
+
+\[
+50.69\text{ seconds}
+\]
+
+Despite having substantially fewer parameters, Model B is not
+faster than Model A.
+
+This demonstrates that parameter count alone does not determine
+actual execution time.
+
+Implementation efficiency, memory access, hardware utilization,
+and convolution implementation can all affect runtime.
+
+% ------------------------------------------------------------
+\section{Key Findings and Interpretations}
+% ------------------------------------------------------------
+
+The main findings are:
+
+\begin{enumerate}
+    \item EfficientNet-B0 achieved the highest accuracy.
+    \item Model B achieved the smallest memory footprint.
+    \item Model A provides a strong middle ground.
+    \item MobileNetV2 provides high accuracy with a smaller
+    footprint than EfficientNet-B0.
+    \item Parameter reduction can result in substantial accuracy
+    degradation.
+    \item A smaller parameter count does not necessarily result
+    in faster training.
+\end{enumerate}
+
+% ------------------------------------------------------------
+\section{Strategic Implications}
+% ------------------------------------------------------------
+
+The choice of model should depend on the requirements of the
+deployment environment.
+
+For an application where maximum classification accuracy is the
+main objective, EfficientNet-B0 is the strongest model evaluated.
+
+For extremely memory-constrained edge devices, Model B may be
+preferred despite its lower accuracy.
+
+Model A provides a useful compromise between model size,
+training speed, and classification performance.
+
+% ------------------------------------------------------------
+\section{Conclusion}
+% ------------------------------------------------------------
+
+The experiments demonstrate that model architecture selection
+requires balancing accuracy, memory footprint, and computational
+cost.
+
+The highest-performing model is not necessarily the most
+appropriate model for every deployment environment.
+
+EfficientNet-B0 achieved the highest accuracy, while Model B
+achieved the lowest memory footprint.
+
+Therefore, model selection should be based on the actual
+constraints and requirements of the target application.
+
+% ------------------------------------------------------------
+\section{Trade-offs, Advantages, and Limitations:
+Custom Model vs. Pre-trained Model}
+% ------------------------------------------------------------
+
+% ------------------------------------------------------------
+\subsection{Custom CNN Model Analysis}
+% ------------------------------------------------------------
+
+\textbf{Advantages}
+
+\begin{itemize}
+    \item Full control over the architecture.
+    \item Can be specifically designed for the target problem.
+    \item Model A has a relatively small footprint compared with
+    the pre-trained networks.
+    \item No dependency on ImageNet feature representations.
+    \item Architecture can be optimized specifically for edge
+    deployment.
+\end{itemize}
+
+\textbf{Limitations}
+
+\begin{itemize}
+    \item Requires manual architecture design.
+    \item Hyperparameter tuning may be necessary.
+    \item Extremely small models can lose significant accuracy.
+    \item Generalization to other datasets may be limited.
+\end{itemize}
+
+% ------------------------------------------------------------
+\subsection{Pre-trained Model Analysis}
+% ------------------------------------------------------------
+
+\textbf{Advantages}
+
+\begin{itemize}
+    \item Strong feature representations.
+    \item High classification accuracy.
+    \item Established architectures.
+    \item Useful for rapid experimentation.
+    \item Efficient transfer learning when sufficient resources
+    are available.
+\end{itemize}
+
+\textbf{Limitations}
+
+\begin{itemize}
+    \item Larger parameter count.
+    \item Larger memory footprint.
+    \item Higher computational cost.
+    \item Additional input adaptation may be required.
+    \item Pre-trained features may not be perfectly aligned with
+    handwritten digit data.
+\end{itemize}
+
+% ------------------------------------------------------------
+\subsection{Decision Framework: When to Choose Which Approach}
+% ------------------------------------------------------------
+
+\begin{table}[H]
+\centering
+\caption{Model Selection Guidelines}
+\label{tab:model_selection}
+
+\begin{tabularx}{\textwidth}{p{4cm}p{3.5cm}X}
+\toprule
+\textbf{Scenario}
+&
+\textbf{Recommended Model}
+&
+\textbf{Reason}
+\\
+\midrule
+
+Maximum classification accuracy
+&
+EfficientNet-B0
+&
+Highest test accuracy among evaluated models.
+\\
+
+High accuracy with moderate resources
+&
+Model A
+&
+Good balance between accuracy, size, and training time.
+\\
+
+Extremely limited memory
+&
+Model B
+&
+Only 9,741 trainable parameters and 0.0466 MB model size.
+\\
+
+High accuracy with transfer learning
+&
+MobileNetV2
+&
+Strong accuracy with smaller footprint than EfficientNet-B0.
+\\
+
+Strict sub-100k parameter requirement
+&
+Model B
+&
+Successfully satisfies the assignment constraint.
+\\
+
+\bottomrule
+\end{tabularx}
+
+\end{table}
+
+% ------------------------------------------------------------
+\subsection{Strategic Trade-offs Summary}
+% ------------------------------------------------------------
+
+\textbf{Accuracy vs. Memory}
+
+Higher accuracy was generally associated with larger models in
+this experiment.
+
+Model B demonstrates the extreme memory-efficient end of the
+design space, while EfficientNet-B0 provides the highest accuracy.
+
+\textbf{Efficiency vs. Accuracy}
+
+Model A provides a practical compromise.
+
+It achieved 94.35\% accuracy with only 2.1431 MB of model storage.
+
+\textbf{Parameter Count vs. Runtime}
+
+Model B contains dramatically fewer parameters than Model A,
+but its average training time is slightly higher.
+
+Therefore, parameter count should not be used as the only measure
+of computational efficiency.
+
+% ------------------------------------------------------------
+\subsection{Conclusion: Balanced Strategy}
+% ------------------------------------------------------------
+
+The experiments demonstrate that there is no universally optimal
+architecture.
+
+EfficientNet-B0 is the best choice when classification accuracy
+is the highest priority and sufficient computational resources
+are available.
+
+Model B is the most suitable option when memory is the dominant
+constraint.
+
+Model A provides a practical middle ground between the two
+extremes.
+
+Therefore, the final model should be selected based on the target
+deployment requirements rather than accuracy alone.
+
+
+% ============================================================
+% CHAPTER 5
+% ============================================================
+
+\chapter{Overall Conclusion}
+
+This project investigated resource-constrained convolutional
+neural networks for classifying two-digit handwritten numbers.
+
+Four architectures were evaluated:
+
+\begin{enumerate}
+    \item Standard custom CNN (Model A).
+    \item Lightweight depthwise-separable CNN (Model B).
+    \item MobileNetV2.
+    \item EfficientNet-B0.
+\end{enumerate}
+
+Model A achieved 94.35\% test accuracy using 560,612 trainable
+parameters.
+
+Model B successfully satisfied the assignment requirement of
+fewer than 100,000 trainable parameters, containing only 9,741
+parameters. However, its test accuracy was 64.97\%.
+
+MobileNetV2 achieved 96.79\% test accuracy.
+
+EfficientNet-B0 achieved the highest accuracy at 97.47\%.
+
+The results demonstrate an important trade-off between
+classification performance and resource requirements.
+
+For maximum accuracy, EfficientNet-B0 is the strongest choice.
+
+For extremely constrained memory environments, Model B provides
+the smallest model footprint.
+
+Model A provides a balanced alternative with strong accuracy
+and relatively low resource requirements.
+
+Overall, the experiment demonstrates that designing neural
+networks for edge devices requires considering accuracy,
+memory footprint, and computational cost simultaneously.
+
+
+% ============================================================
+% REFERENCES
+% ============================================================
+
+\clearpage
+
+\begin{thebibliography}{99}
+
+\bibitem{lecun1998}
+Y. LeCun, L. Bottou, Y. Bengio, and P. Haffner,
+``Gradient-based learning applied to document recognition,''
+\textit{Proceedings of the IEEE},
+vol. 86, no. 11, pp. 2278--2324, 1998.
+
+\bibitem{howard2017}
+A. G. Howard et al.,
+``MobileNets: Efficient Convolutional Neural Networks for Mobile
+Vision Applications,''
+arXiv:1704.04861, 2017.
+
+\bibitem{sandler2018}
+M. Sandler, A. Howard, M. Zhu, A. Zhmoginov, and L.-C. Chen,
+``MobileNetV2: Inverted Residuals and Linear Bottlenecks,''
+Proceedings of the IEEE Conference on Computer Vision and Pattern
+Recognition, 2018.
+
+\bibitem{tan2019}
+M. Tan and Q. V. Le,
+``EfficientNet: Rethinking Model Scaling for Convolutional Neural
+Networks,''
+Proceedings of the International Conference on Machine Learning,
+2019.
+
+\bibitem{kingma2014}
+D. P. Kingma and J. Ba,
+``Adam: A Method for Stochastic Optimization,''
+arXiv:1412.6980, 2014.
+
+\bibitem{he2016}
+K. He, X. Zhang, S. Ren, and J. Sun,
+``Deep Residual Learning for Image Recognition,''
+Proceedings of the IEEE Conference on Computer Vision and Pattern
+Recognition, 2016.
+
+\bibitem{pytorch}
+PyTorch Documentation,
+``PyTorch: An Open Source Machine Learning Framework,''
+Available at:
+\url{https://pytorch.org/}
+
+\bibitem{torchvision}
+Torchvision Documentation,
+``Torchvision Models and Datasets,''
+Available at:
+\url{https://pytorch.org/vision/}
+
+\bibitem{transfer}
+PyTorch Tutorials,
+``Transfer Learning for Computer Vision Tutorial,''
+Available at:
+\url{https://pytorch.org/tutorials/beginner/transfer_learning_tutorial.html}
+
+\end{thebibliography}
+
+
+% ============================================================
+% APPENDIX
+% ============================================================
+
+\appendix
+
+\chapter{Appendix}
+
+% ------------------------------------------------------------
+\section{GitHub URL}
+% ------------------------------------------------------------
+
+The source code, notebooks, experiment results, and supporting
+files are available in the following GitHub repository:
+
+\begin{center}
+
+\url{https://github.com/YOUR-USERNAME/YOUR-REPOSITORY}
+
+\end{center}
+
+
+
+% ------------------------------------------------------------
+\section{Final Model Comparison}
+% ------------------------------------------------------------
+
+\begin{table}[H]
+\centering
+\caption{Final Summary of All Evaluated Models}
+\label{tab:final_summary}
+
+\begin{tabular}{lrrrr}
+\toprule
+\textbf{Model}
+&
+\textbf{Parameters}
+&
+\textbf{Size}
+&
+\textbf{Time/Epoch}
+&
+\textbf{Accuracy}
+\\
+\midrule
+
+Model A
+&
+560,612
+&
+2.1431 MB
+&
+46.62 s
+&
+94.35\%
+\\
+
+Model B
+&
+9,741
+&
+0.0466 MB
+&
+50.69 s
+&
+64.97\%
+\\
+
+MobileNetV2
+&
+2,351,972
+&
+9.2100 MB
+&
+99.50 s
+&
+96.79\%
+\\
+
+EfficientNet-B0
+&
+4,135,648
+&
+16.0674 MB
+&
+89.48 s
+&
+97.47\%
+\\
+
+\bottomrule
+\end{tabular}
+
+\end{table}
+
+
+
+% ============================================================
+% END DOCUMENT
+% ============================================================
+
+\end{document}
