@@ -105,8 +105,8 @@ A conventional CNN architecture was implemented as the baseline custom model.
 | Metric | Value |
 |---|---:|
 | Trainable Parameters | 560,612 |
-| Test Accuracy | 94.35% |
-| Model Size | 2.1431 MB |
+| Test Accuracy | 94.46% |
+| Model Size | 2.1430 MB |
 
 The model uses standard convolutional layers to extract spatial features from the handwritten digit images.
 
@@ -149,7 +149,7 @@ Output
 | Metric | Value |
 |---|---:|
 | Trainable Parameters | 9,741 |
-| Test Accuracy | 64.97% |
+| Test Accuracy | 68.39% |
 | Model Size | 0.0466 MB |
 
 The model satisfies the parameter constraint:
@@ -215,10 +215,10 @@ EfficientNet-B0 achieved the highest test accuracy among the evaluated models.
 
 | Model | Test Accuracy | Trainable Parameters | Model Size |
 |---|---:|---:|---:|
-| Standard Custom CNN | 94.35% | 560,612 | 2.1431 MB |
-| Resource-Constrained CNN | 64.97% | 9,741 | 0.0466 MB |
-| MobileNetV2 | 96.79% | — | — |
-| EfficientNet-B0 | 97.47% | — | — |
+| Standard Custom CNN | 94.46% | 560,612 | 2.1431 MB |
+| Resource-Constrained CNN | 68.39% | 9,741 | 0.0466 MB |
+| MobileNetV2 | 96.79% | 2351972 | 9.2100 |
+| EfficientNet-B0 | 97.47% | 4135648 | 16.0673 |
 
 ---
 
@@ -326,10 +326,13 @@ Possible improvements include:
     ├── README.md
     │
     ├── notebooks/
-    │   └── EN3150_Assignment_03.ipynb
+    │   └── EN3150_Assignment_03_Two_Digit_Classification.ipynb
     │
-    ├── data/
-    │   └── dataset/
+    ├── achive/
+    │   ├── test/
+    |   ├── train/
+    |   ├── tset.csv
+    |   └── train.csv
     │
     ├── models/
     │   ├── custom_cnn.py
